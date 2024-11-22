@@ -1,6 +1,15 @@
-const fs = require('fs/promises')
+//const fs = require('fs/promises')
+const Contact = require("./schema");
 
-const listContacts = async () => {}
+const listContacts = async () => {
+  Contact.find()
+  .then((contacts) => {
+    console.log("All contacts: ", contacts)
+  })
+  .catch(error){
+    console.log(error);
+  }
+}
 
 const getContactById = async (contactId) => {}
 
