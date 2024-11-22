@@ -2,18 +2,37 @@
 const Contact = require("./schema");
 
 const listContacts = async () => {
-  Contact.find()
-  .then((contacts) => {
-    console.log("All contacts: ", contacts)
-  })
-  .catch(error){
-    console.log(error);
+  try{
+    const contacts = await Contact.find();
+    return contacts;
+  }
+  catch(error){
+    console.error("Something went wrong ", error)
+    throw error;
   }
 }
 
-const getContactById = async (contactId) => {}
+const getContactById = async (contactId) => {
+  try{
+    const contact = await Contact.findById(contactId);
+    return contact;
+  }
+  catch(error){
+    console.error("Something went wrong ", error)
+    throw error;
+  }
+}
 
-const removeContact = async (contactId) => {}
+const removeContact = async (contactId) => {
+  try{
+    const contactToDelate = await Contact.findByIdAndDelete(contactId);
+    return contactToDelate;
+  }
+  catch(error) {
+    console.error("Something went wrong ", error)
+    throw error;
+  }
+}
 
 const addContact = async (body) => {}
 

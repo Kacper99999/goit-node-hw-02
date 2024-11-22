@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({
         type:String,
         required:[true, "set name for contact"]
     },
-    emial:{
+    email:{
         tyle:String
     },
     phone:{
@@ -18,6 +18,6 @@ const schema = new mongoose.Schema({
     
 });
 
-const Contact = mongoose.model('Contatc',schema);
+const Contact = mongoose.model('db-contacts',schema);
 
 module.exports = Contact;
