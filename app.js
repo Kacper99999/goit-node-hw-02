@@ -2,7 +2,6 @@ const express = require('express')
 const logger = require('morgan')
 const cors = require('cors')
 const mongoose = require('mongoose')
-const Contact = require('./models/schema')
 
 const URI = 'mongodb+srv://kszkutnik99:KBNy8ef8uIGn67Dy@cluster0.sjcwn.mongodb.net/db-contacts?retryWrites=true&w=majority'
 

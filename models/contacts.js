@@ -34,9 +34,38 @@ const removeContact = async (contactId) => {
   }
 }
 
-const addContact = async (body) => {}
+const addContact = async (body) => {
+  try{
+    const newContact = await Contact.create(body);
+    return newContact;
+  }
+  catch(error){
+    console.error("Something went wrong ",error)
+    throw error;
+  }
+}
 
-const updateContact = async (contactId, body) => {}
+const updateContact = async (contactId, body) => {
+  try{
+    const updateContact = await Contact.findByIdAndUpdate(contactId, body, {new:true});
+    return updateContact;
+  }
+  catch(error){
+    console.error("Something went wrong ",error)
+    throw error;
+  }
+}
+
+const updateStatusContact = async(contactId, body) => {
+  try{
+    const updateContact = await Contact.findByIdAndUpdate(contactId, {$set:{favorite:body.favorite}}, {new:true});
+    return updateContact;
+  }
+  catch(error){
+    console.error("Something went wrong ",error)
+    throw error;
+  }
+}
 
 module.exports = {
   listContacts,
@@ -44,4 +73,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact
 }
