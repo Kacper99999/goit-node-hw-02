@@ -1,6 +1,9 @@
 const express = require('express')
 const logger = require('morgan')
 const cors = require('cors')
+const dbConnect = require('./db')
+
+dbConnect();
 
 const contactsRouter = require('./routes/api/contacts')
 
