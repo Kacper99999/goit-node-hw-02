@@ -7,9 +7,13 @@ const schema = new mongoose.Schema({
     },
     email:{
         type:String,
+        unique:true,
+        required:[true, "set emial for contact"]
     },
     phone:{
-        type:String
+        type:String,
+        unique:true,
+        required:[true, "set phone for contact"]
     },
     favorite:{
         type:Boolean,
