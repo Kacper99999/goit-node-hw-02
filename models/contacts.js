@@ -1,5 +1,5 @@
 //const fs = require('fs/promises')
-const Contact = require("./schema");
+const Contact = require("../schemas/contactSchema");
 
 const listContacts = async () => {
   try{

@@ -8,18 +8,19 @@ const {
   updateStatusContact
 } = require('../../models/contacts.js')
 const router = express.Router()
+const authentice = require('../../middleware/authMiddleware.js')
 
-router.get('/', async (req, res, next) => {
+router.get('/', authentice, async (req, res, next) => {
   try{
     const contacts = await listContacts();
     res.json(contacts).status(200);
   }
   catch(error){
-    next(error).status(500);
+    next(error);
   }
 })
 
-router.get('/:contactId', async (req, res, next) => {
+router.get('/:contactId', authentice, async (req, res, next) => {
   try{
     const id = req.params.contactId
     const contactID = await getContactById(id);
@@ -29,23 +30,23 @@ router.get('/:contactId', async (req, res, next) => {
     res.json(contactID).status(200);
   }
   catch(error){
-    next(error).status(500);
+    next(error);
   }
 })
 
-router.post('/', async (req, res, next) => {
-  console.log(req.body);
-  const {name, email, phone} = req.body;
+router.post('/', authentice, async (req, res, next) => {
+  const {name, email, phone, favorite} = req.body;
+  const owner = req.user.id;
   try{
-    const newContact = await addContact({name, email, phone})
-    res.json(newContact).status(200);
+    const newContact = await addContact({name, email, phone, favorite, owner})
+    res.json(newContact).status(201);
   }
   catch(error){
-    next(error).status(500);
+    next(error);
   }
 })
 
-router.delete('/:contactId', async (req, res, next) => {
+router.delete('/:contactId', authentice, async (req, res, next) => {
   try{
     const id = req.params.contactId
     const contactID = await removeContact(id)
@@ -55,11 +56,11 @@ router.delete('/:contactId', async (req, res, next) => {
     res.json({message: 'Contact delate'}).status(200)
   }
   catch(error){
-    next(error).status(500);
+    next(error);
   }
 })
 
-router.put('/:contactId', async (req, res, next) => {
+router.put('/:contactId', authentice, async (req, res, next) => {
   const id = req.params.contactId;
   const {name, emial, phone} = req.body;
   try{
@@ -70,11 +71,11 @@ router.put('/:contactId', async (req, res, next) => {
     res.json({message:"Contact updated"}).status(200);
   }
   catch(error){
-    next(error).status(500);
+    next(error);
   }
 })
 
-router.patch('/:contactId/favorite', async (req, res, next) => {
+router.patch('/:contactId/favorite', authentice, async (req, res, next) => {
   const id = req.params.contactId;
   const{favorite} = req.body;
   if(!req.body){
@@ -88,5 +89,6 @@ router.patch('/:contactId/favorite', async (req, res, next) => {
     res.status(400).json({message:"Not found"})
   }
 })
+
 
 module.exports = router
