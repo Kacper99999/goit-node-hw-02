@@ -16,7 +16,6 @@ router.post('/signup', async (req, res, next) => {
       }
   
       const { email, password } = req.body;
-      console.log(typeof(password))
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(409).json({ message: 'Email in use' });
@@ -61,7 +60,6 @@ router.post('/login', async (req, res, next) => {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log(password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Email or password is wrong' });
     }
@@ -71,8 +69,9 @@ router.post('/login', async (req, res, next) => {
         id: user._id, 
       },
       SECRET, 
-      { expiresIn: '1h' } 
+      { expiresIn: '15m' } 
     );
+
 
     user.token = token;
     await user.save();
@@ -92,9 +91,6 @@ router.post('/login', async (req, res, next) => {
 
 router.get('/logout', autenticate, async(req, res, next) => {
   try{
-    if(!req.user){
-      console.log("cos tam")
-    }
     const user = await User.findById(req.user._id);
 
     if(!user){
@@ -108,7 +104,26 @@ router.get('/logout', autenticate, async(req, res, next) => {
   }catch(error){
     next(error);
   }
-})
+});
+
+router.get('/current', autenticate, async(req, res, next) => {
+  try{
+    const {email, subscription} = req.user;
+    console.log(email);
+
+    res.status(200).json({message:{
+      user:{
+        email,
+        subscription
+      }
+    }})
+
+  }catch(error){
+    console.log(error)
+    next(error);
+  }
+});
+
+
 
 module.exports = router;
-  
