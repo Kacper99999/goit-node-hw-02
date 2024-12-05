@@ -16,6 +16,7 @@ router.post('/signup', async (req, res, next) => {
       }
   
       const { email, password } = req.body;
+      console.log(typeof(password))
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(409).json({ message: 'Email in use' });
@@ -119,11 +120,40 @@ router.get('/current', autenticate, async(req, res, next) => {
     }})
 
   }catch(error){
-    console.log(error)
     next(error);
   }
 });
 
+router.post('/refresh-token', async (req, res, next) => {
+  const { refreshToken } = req.body;
 
+  if(!refreshToken){
+    res.status(401).json({message:'Refresh token is required'});
+  }
+
+  try{
+    const decoded = jwt.verify(refreshToken, process.env.SECRET_REFRESH);
+    const user = await User.findById(decoded.id);
+
+    if(!user || user.token !== refreshToken){
+      res.status(403).json({message:'Invalid refresh token'})
+    }
+
+    const accessToken = jwt.sign(
+      { 
+        id: user._id
+      },
+      SECRET,
+      { expiresIn: '15m' }
+    );
+
+    res.status(200).json({
+      accessToken
+    })
+  }catch(error){
+    next(error);
+  }
+})
 
 module.exports = router;
+  
