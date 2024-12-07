@@ -162,7 +162,7 @@ router.post('/refresh-token', async (req, res, next) => {
   }
 });
 
-router.patch('/avatars', uploadAvatar, updateAvatar);
+router.patch('/avatars', autenticate, uploadAvatar, updateAvatar);
 
 module.exports = router;
   

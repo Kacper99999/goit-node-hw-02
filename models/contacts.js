@@ -1,4 +1,4 @@
-//const fs = require('fs/promises')
+
 const Contact = require("../schemas/contactSchema");
 
 const listContacts = async () => {
