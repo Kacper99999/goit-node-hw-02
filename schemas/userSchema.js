@@ -20,9 +20,8 @@ const userSchema = new Schema({
           type: String,
           default: null,
         },  
-        refreshToken: {
-          type: String,
-          default: null,
+        avatarURL: {
+          type: String
         }
 })
 

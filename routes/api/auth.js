@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const gravatar = require('gravatar');
+const jwt = require('jsonwebtoken');
+const { SECRET } = process.env;
 const User = require('../../schemas/userSchema');
 const validation = require('../../models/validation');
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
 const autenticate = require('../../middleware/authMiddleware');
-const { SECRET } = process.env;
+const uploadAvatar = require('../../middleware/upload');
+const updateAvatar = require('../../middleware/update');
+require('dotenv').config();
+
 
 router.post('/signup', async (req, res, next) => {
     try {
@@ -16,7 +20,6 @@ router.post('/signup', async (req, res, next) => {
       }
   
       const { email, password } = req.body;
-      console.log(typeof(password))
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(409).json({ message: 'Email in use' });
@@ -25,10 +28,16 @@ router.post('/signup', async (req, res, next) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
+      const avatarURL = gravatar.url(email, {
+        s: '200',
+        d: 'retro'
+      },true);
+
       const newUser = new User({
         email,
         password: hashedPassword, 
         subscription: 'starter', 
+        avatarURL
       });
   
       await newUser.save();
@@ -37,14 +46,13 @@ router.post('/signup', async (req, res, next) => {
         user: {
           email: newUser.email,
           subscription: newUser.subscription,
+          avatarURL: newUser.avatarURL
         },
       });
     } catch (err) {
       next(err);
     }
   });
-
-  
 
 router.post('/login', async (req, res, next) => {
   try {
@@ -110,7 +118,6 @@ router.get('/logout', autenticate, async(req, res, next) => {
 router.get('/current', autenticate, async(req, res, next) => {
   try{
     const {email, subscription} = req.user;
-    console.log(email);
 
     res.status(200).json({message:{
       user:{
@@ -153,7 +160,9 @@ router.post('/refresh-token', async (req, res, next) => {
   }catch(error){
     next(error);
   }
-})
+});
+
+router.patch('/avatars', uploadAvatar, updateAvatar);
 
 module.exports = router;
   
