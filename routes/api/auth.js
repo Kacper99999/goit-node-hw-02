@@ -3,7 +3,9 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const gravatar = require('gravatar');
 const jwt = require('jsonwebtoken');
-const { SECRET } = process.env;
+const sgMail = require('@sendgrid/mail');
+const { v4 : uuidv4 } = require('uuid');
+const { SECRET, EMAIL } = process.env;
 const User = require('../../schemas/userSchema');
 const validation = require('../../models/validation');
 const autenticate = require('../../middleware/authMiddleware');
@@ -14,6 +16,7 @@ require('dotenv').config();
 
 router.post('/signup', async (req, res, next) => {
     try {
+      console.log(req.body);
       const { error } = validation.validate(req.body);
       if (error) {
         return res.status(400).json({ message: error.details[0].message });
@@ -33,12 +36,24 @@ router.post('/signup', async (req, res, next) => {
         d: 'retro'
       },true);
 
+      const verificationToken = uuidv4();
+
       const newUser = new User({
         email,
         password: hashedPassword, 
         subscription: 'starter', 
-        avatarURL
+        avatarURL,
+        verificationToken
       });
+
+      const msg = {
+        from: EMAIL, 
+        to: email,
+        subject: "Verify your email address",
+        html: `Click <a href="http://localhost:3000/users/verify/${verificationToken}">here</a> to verify your email address.`
+      };
+
+      await sgMail.send(msg)
   
       await newUser.save();
 
@@ -53,6 +68,8 @@ router.post('/signup', async (req, res, next) => {
       next(err);
     }
   });
+
+
 
 router.post('/login', async (req, res, next) => {
   try {
@@ -98,6 +115,8 @@ router.post('/login', async (req, res, next) => {
 });
 
 
+
+
 router.get('/logout', autenticate, async(req, res, next) => {
   try{
     const user = await User.findById(req.user._id);
@@ -115,6 +134,8 @@ router.get('/logout', autenticate, async(req, res, next) => {
   }
 });
 
+
+
 router.get('/current', autenticate, async(req, res, next) => {
   try{
     const {email, subscription} = req.user;
@@ -130,6 +151,8 @@ router.get('/current', autenticate, async(req, res, next) => {
     next(error);
   }
 });
+
+
 
 router.post('/refresh-token', async (req, res, next) => {
   const { refreshToken } = req.body;
@@ -162,7 +185,70 @@ router.post('/refresh-token', async (req, res, next) => {
   }
 });
 
+
+
 router.patch('/avatars', autenticate, uploadAvatar, updateAvatar);
+
+
+
+router.get('/verivity/:verivicationToken', async (req, res, next) => {
+  try{
+    const { verificationToken } = req.params;
+    const user = await User.findOne(verificationToken);
+    if(!user){
+      return res.status(400).json({message:'User not found'});
+    }
+
+    user.verify = true;
+    user.verificationToken = null;
+    await user.save();
+
+    return res.status(200).json({message:'Verification successful'});
+  }catch(error){
+    next(error);
+  }
+});
+
+
+
+router.post('/verify', async (req, res, next) => {
+  const {email} = req.body;
+
+  if(!email){
+    return res.status(400).json({message:'missing required field email'});
+  }
+
+  try{
+    const user = await User.findOne({email});
+
+    if(!user){
+      return res.status(404).json({message:'User not found'});
+    }
+
+    if(user.verify){
+      return res.status(400).json({message:'Verification has already been passed'});
+    }
+
+    const verificationToken = uuidv4();
+    user.verificationToken = verificationToken;
+
+    await user.save();
+
+    const msg = {
+      from: EMAIL, 
+      to: email,
+      subject: "Verify your email address",
+      html: `Click <a href="http://localhost:3000/users/verify/${verificationToken}">here</a> to verify your email address.`
+    };
+
+    await sgMail.send(msg);
+
+    res.status(200).json({message: 'Verification email sent'})
+
+  }catch(error){
+    next(error);
+  }
+});
 
 module.exports = router;
   
